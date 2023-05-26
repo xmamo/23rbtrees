@@ -16,7 +16,7 @@
 
 namespace {
 #ifndef NDEBUG
-  void check(std::size_t count, std::default_random_engine& engine) {
+  void _check(std::size_t count, std::default_random_engine& engine) {
     Map<int, int> map;
 
     {
@@ -92,7 +92,7 @@ namespace {
     }
   }
 #else
-#define check(count, engine)
+#define _check(count, engine)
 #endif
 
   volatile int value;
@@ -278,7 +278,7 @@ int main(int argc, char* argv[]) {
   }
 
   std::default_random_engine engine((std::random_device()()));
-  check(count, engine);
+  _check(count, engine);
   bench(count, engine);
   return EXIT_SUCCESS;
 }
