@@ -119,7 +119,7 @@ class Map {
       return const_cast<Node*>(const_cast<const Node*>(this)->xmost_leaf(direction));
     }
 
-    /// @brief Retrieves the predecessor or the successor of this node, if any
+    /// @brief Retrieves the predecessor or successor of this node, if any
     /// @param direction @c LEFT for the predecessor, @c RIGHT for the successor
     const Node* xcessor(Direction direction) const noexcept {
       if (this->children[direction] != nullptr) {
@@ -234,7 +234,7 @@ class Map {
   std::size_t _count;
 
 public:
-  /// @brief Constructs and empty map
+  /// @brief Constructs an empty map
   Map() : _root(nullptr), _count(0) {}
 
   /// @brief Destroys this map
