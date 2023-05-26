@@ -1,0 +1,26 @@
+FormatStyle: file
+
+HeaderFilterRegex: .*\.hpp
+
+Checks: >-
+  bugprone-*,
+  concurrency-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-exception-escape,
+  -misc-no-recursion,
+  -misc-non-private-member-variables-in-classes,
+  -modernize-avoid-c-arrays,
+  -modernize-use-default-member-init,
+  -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-magic-numbers
+
+CheckOptions:
+  misc-const-correctness.AnalyzeValues: false
+  readability-braces-around-statements.ShortStatementLines: 2
