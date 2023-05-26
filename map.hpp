@@ -271,7 +271,7 @@ public:
   }
 
   /// @brief Finds the value associated to a given key, if any
-  const V* lookup(K key) const noexcept {
+  const V* lookup(const K& key) const noexcept {
     const Node* node = this->_root;
 
     while (node != nullptr) {
@@ -290,12 +290,12 @@ public:
   }
 
   /// @brief Finds the value associated to a key, if any
-  V* lookup(K key) noexcept {
+  V* lookup(const K& key) noexcept {
     return const_cast<V*>(const_cast<const Map*>(this)->lookup(key));
   }
 
   /// @brief Associates a key to a value
-  void insert(K key, V value) {
+  void insert(const K& key, const V& value) {
     // Top-down pass:
 
     Node* node = this->_root;
@@ -375,7 +375,7 @@ public:
 
   /// @brief Removes the value associated to a key, if any
   /// @return @c true if an association to the key existed prior to removal, @c false otherwise
-  bool remove(K key) {
+  bool remove(const K& key) {
     // Top-down pass:
 
     Node* node = this->_root;
