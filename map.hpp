@@ -1,5 +1,5 @@
-#ifndef MAP_CPP_H
-#define MAP_CPP_H
+#ifndef MAP_HPP
+#define MAP_HPP
 
 #include <cassert>
 #include <compare>
