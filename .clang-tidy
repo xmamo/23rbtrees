@@ -22,5 +22,5 @@ Checks: >-
   -readability-magic-numbers
 
 CheckOptions:
-  misc-const-correctness.AnalyzeValues: false
-  readability-braces-around-statements.ShortStatementLines: 2
+  - {key: misc-const-correctness.AnalyzeValues, value: false}
+  - {key: readability-braces-around-statements.ShortStatementLines, value: 2}
