@@ -93,6 +93,8 @@ class Map {
       return left_black_depth + (node->color == BLACK ? 1 : 0);
     }
 
+    /// @brief Retrieves the leftmost or rightmost descendant of this node
+    /// @param direction @c LEFT for the leftmost node, @c RIGHT for the rightmost node
     const Node* xmost_node(Direction direction) const noexcept {
       const Node* node = this;
 
@@ -103,11 +105,13 @@ class Map {
       return node;
     }
 
+    /// @brief Retrieves the leftmost or rightmost descendant of this node
+    /// @param direction @c LEFT for the leftmost node, @c RIGHT for the rightmost node
     Node* xmost_node(Direction direction) noexcept {
       return const_cast<Node*>(const_cast<const Node*>(this)->xmost_node(direction));
     }
 
-    /// @brief Retrieves the leftmost or rightmost leaf of this tree
+    /// @brief Retrieves the leftmost or rightmost leaf descending from this node
     /// @param direction @c LEFT for the leftmost leaf, @c RIGHT for the rightmost leaf
     const Node* xmost_leaf(Direction direction) const noexcept {
       const Node* node = this;
@@ -123,7 +127,7 @@ class Map {
       }
     }
 
-    /// @brief Retrieves the leftmost or rightmost leaf of this tree
+    /// @brief Retrieves the leftmost or rightmost leaf descending from this node
     /// @param direction @c LEFT for the leftmost leaf, @c RIGHT for the rightmost leaf
     Node* xmost_leaf(Direction direction) noexcept {
       return const_cast<Node*>(const_cast<const Node*>(this)->xmost_leaf(direction));
@@ -270,6 +274,7 @@ public:
     other._count = 0;
   }
 
+  /// @brief Empties this map, clearing all associations from keys to values
   void clear() noexcept {
     if (this->_root != nullptr) {
       Node* node = this->_root->xmost_leaf(LEFT);
@@ -285,7 +290,6 @@ public:
     this->_count = 0;
   }
 
-  /// @brief Destroys this map
   ~Map() noexcept {
     this->clear();
   }
