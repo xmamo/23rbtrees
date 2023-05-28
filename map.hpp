@@ -34,7 +34,7 @@ class Map {
     RIGHT = 1,
   };
 
-  /// @brief Red–black tree node data type
+  /// @brief Red-black tree node data type
   struct Node {
     /// @brief The key stored by the node
     K key;
@@ -53,10 +53,6 @@ class Map {
 
     /// @brief The color of the node
     Color color;
-
-    /// @brief Destroys this node
-    /// @warning The children of this node are @em not recursively destroyed
-    ~Node() noexcept = default;
 
     /// @brief Determines if a node is black
     /// @note @c nullptr is considered black
@@ -97,6 +93,20 @@ class Map {
       return left_black_depth + (node->color == BLACK ? 1 : 0);
     }
 
+    const Node* xmost_node(Direction direction) const noexcept {
+      const Node* node = this;
+
+      while (node->children[direction] != nullptr) {
+        node = node->children[direction];
+      }
+
+      return node;
+    }
+
+    Node* xmost_node(Direction direction) noexcept {
+      return const_cast<Node*>(const_cast<const Node*>(this)->xmost_node(direction));
+    }
+
     /// @brief Retrieves the leftmost or rightmost leaf of this tree
     /// @param direction @c LEFT for the leftmost leaf, @c RIGHT for the rightmost leaf
     const Node* xmost_leaf(Direction direction) const noexcept {
@@ -119,55 +129,22 @@ class Map {
       return const_cast<Node*>(const_cast<const Node*>(this)->xmost_leaf(direction));
     }
 
-    /// @brief Retrieves the predecessor or successor of this node, if any
-    /// @param direction @c LEFT for the predecessor, @c RIGHT for the successor
-    const Node* xcessor(Direction direction) const noexcept {
-      if (this->children[direction] != nullptr) {
-        const Node* node = this->children[direction];
-
-        while (node->children[1 - direction] != nullptr) {
-          node = node->children[1 - direction];
-        }
-
-        return node;
-      }
-
-      if (this->direction == direction && this->parent != nullptr) {
-        const Node* node = this->parent;
-
-        while (node->direction == direction && node->parent != nullptr) {
-          node = node->parent;
-        }
-
-        return node->parent;
-      }
-
-      return this->parent;
-    }
-
-    /// @brief Retrieves the predecessor or successor of this node, if any
-    /// @param direction @c LEFT for the predecessor, @c RIGHT for the successor
-    Node* xcessor(Direction direction) noexcept {
-      return const_cast<Node*>(const_cast<const Node*>(this)->xcessor(direction));
-    }
-
     /// @brief Retrieves the post-order predecessor or successor of this node, if any
     /// @param direction @c LEFT for the post-order predecessor, @c RIGHT for the post-order successor
-    const Node* postorder_xcessor(Direction direction) const noexcept {
+    const Node* post_order_xcessor(Direction direction) const noexcept {
       if (this->direction == direction)
         return this->parent;
 
-      if (this->parent != nullptr && this->parent->children[direction] != nullptr) {
+      if (this->parent != nullptr && this->parent->children[direction] != nullptr)
         return this->parent->children[direction]->xmost_leaf(static_cast<Direction>(1 - direction));
-      }
 
       return this->parent;
     }
 
     /// @brief Retrieves the post-order predecessor or successor of this node, if any
     /// @param direction @c LEFT for the post-order predecessor, @c RIGHT for the post-order successor
-    Node* postorder_xcessor(Direction direction) noexcept {
-      return const_cast<Node*>(const_cast<const Node*>(this)->postorder_xcessor(direction));
+    Node* post_order_xcessor(Direction direction) noexcept {
+      return const_cast<Node*>(const_cast<const Node*>(this)->post_order_xcessor(direction));
     }
 
     /// @brief Counts the number of nodes in a tree
@@ -179,7 +156,7 @@ class Map {
 
         do {
           count += 1;
-          node = node->postorder_xcessor(RIGHT);
+          node = node->post_order_xcessor(RIGHT);
         } while (node != nullptr);
       }
 
@@ -227,25 +204,80 @@ class Map {
     }
   };
 
-  /// @brief The root of the red–black tree internal to this map
+  /// @brief The root of the red-black tree internal to this map
   Node* _root;
 
-  /// @brief The number of key–value pairs currently being stored in this map
+  /// @brief The number of key-value pairs currently being stored in this map
   std::size_t _count;
 
 public:
   /// @brief Constructs an empty map
-  Map() : _root(nullptr), _count(0) {}
+  Map() noexcept : _root(nullptr), _count(0) {}
 
-  /// @brief Destroys this map
-  ~Map() noexcept {
+  Map(const Map& other) : _root(nullptr) {
+    this->_count = other._count;
+
+    if (other._root != nullptr) {
+      const Node* node0 = other._root;
+
+      Node* node1 = this->_root = new Node{
+        node0->key,
+        node0->value,
+        {nullptr, nullptr},
+        nullptr,
+        node0->direction,
+        node0->color,
+      };
+
+      while (true) {
+        Direction direction;
+
+        if (node0->children[LEFT] != nullptr) {
+          direction = LEFT;
+        } else if (node0->children[RIGHT] != nullptr) {
+          direction = RIGHT;
+        } else {
+          while (node0->children[RIGHT] == nullptr || node1->children[RIGHT] != nullptr) {
+            if (node0->parent == nullptr)
+              return;
+
+            node0 = node0->parent;
+            node1 = node1->parent;
+          }
+
+          direction = RIGHT;
+        }
+
+        node1->children[direction] = new Node{
+          node0->children[direction]->key,
+          node0->children[direction]->value,
+          {nullptr, nullptr},
+          node1,
+          direction,
+          node0->children[direction]->color,
+        };
+
+        node0 = node0->children[direction];
+        node1 = node1->children[direction];
+      }
+    }
+  }
+
+  Map(Map&& other) noexcept {
+    this->_root = other._root;
+    this->_count = other._count;
+    other._root = nullptr;
+    other._count = 0;
+  }
+
+  void clear() noexcept {
     if (this->_root != nullptr) {
       Node* node = this->_root->xmost_leaf(LEFT);
 
       do {
-        Node* postorder_successor = node->postorder_xcessor(RIGHT);
+        Node* post_order_successor = node->post_order_xcessor(RIGHT);
         delete node;
-        node = postorder_successor;
+        node = post_order_successor;
       } while (node != nullptr);
     }
 
@@ -253,9 +285,14 @@ public:
     this->_count = 0;
   }
 
+  /// @brief Destroys this map
+  ~Map() noexcept {
+    this->clear();
+  }
+
   /// @brief Verifies that this map is valid: that is, that no internal invariants are violated
   /// @exception std::logic_error If an invariant is violated
-  void _check() const {
+  void check() const {
     if (Node::is_red(this->_root))
       throw std::logic_error("Node::is_red(this->_root)");
 
@@ -265,7 +302,7 @@ public:
       throw std::logic_error("Node::count(this->_root) != this->_count");
   }
 
-  /// @brief Returns the number of key–value pairs currently being stored in this map
+  /// @brief Returns the number of key-value pairs currently being stored in this map
   std::size_t count() const noexcept {
     return this->_count;
   }
@@ -317,7 +354,15 @@ public:
       }
     }
 
-    node = new Node{key, value, {nullptr, nullptr}, parent, node_direction, RED};
+    node = new Node{
+      key,
+      value,
+      {nullptr, nullptr},
+      parent,
+      node_direction,
+      RED,
+    };
+
     (parent != nullptr ? parent->children[node_direction] : this->_root) = node;
     this->_count += 1;
 
@@ -397,10 +442,10 @@ public:
     }
 
     if (node->children[LEFT] != nullptr && node->children[RIGHT] != nullptr) {
-      Node* predecessor = node->xcessor(LEFT);
-      node->key = predecessor->key;
-      node->value = predecessor->value;
-      node = predecessor;
+      Node* in_order_predecessor = node->children[LEFT]->xmost_node(RIGHT);
+      node->key = in_order_predecessor->key;
+      node->value = in_order_predecessor->value;
+      node = in_order_predecessor;
     }
 
     Node* parent = node->parent;

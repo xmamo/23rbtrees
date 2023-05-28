@@ -16,7 +16,7 @@
 
 namespace {
 #ifndef NDEBUG
-  void _check(std::size_t count, std::default_random_engine& engine) {
+  void check(std::size_t count, std::default_random_engine& engine) {
     Map<int, int> map;
 
     {
@@ -26,7 +26,7 @@ namespace {
 
       for (int key : keys) {
         map.insert(key, -key);
-        map._check();
+        map.check();
         int* value = map.lookup(key);
         assert(value != nullptr && *value == -key);
       }
@@ -36,13 +36,23 @@ namespace {
       for (int key : keys) {
         int* value = map.lookup(key);
         assert(value != nullptr && *value == -key);
+      }
+
+      {
+        Map<int, int> map_copy(map);
+        map_copy.check();
+
+        for (int key : keys) {
+          int* value = map_copy.lookup(key);
+          assert(value != nullptr && *value == -key);
+        }
       }
 
       std::shuffle(keys.begin(), keys.end(), engine);
 
       for (int key : keys) {
         map.remove(key);
-        map._check();
+        map.check();
         assert(map.lookup(key) == nullptr);
       }
 
@@ -76,7 +86,7 @@ namespace {
 
           case INSERT: {
             map.insert(key, -key);
-            map._check();
+            map.check();
             int* value = map.lookup(key);
             assert(value != nullptr && *value == -key);
             break;
@@ -92,7 +102,7 @@ namespace {
     }
   }
 #else
-#define _check(count, engine)
+#define check(count, engine)
 #endif
 
   volatile int value;
@@ -120,7 +130,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "           std::map insert: " << t1 - t0 << std::endl;
+        std::cout << "       std::map insertions: " << t1 - t0 << std::endl;
       }
 
       {
@@ -131,7 +141,29 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "                Map insert: " << t1 - t0 << std::endl;
+        std::cout << "            Map insertions: " << t1 - t0 << std::endl;
+      }
+
+      {
+        auto t0 = std::chrono::high_resolution_clock::now();
+        std::map<int, int> std_map_copy(std_map);
+        auto t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "             std::map copy: " << t1 - t0 << std::endl;
+
+        t0 = std::chrono::high_resolution_clock::now();
+        Map<int, int> map_copy(map);
+        t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "                  Map copy: " << t1 - t0 << std::endl;
+
+        t0 = std::chrono::high_resolution_clock::now();
+        std_map_copy.clear();
+        t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "            std::map clear: " << t1 - t0 << std::endl;
+
+        t0 = std::chrono::high_resolution_clock::now();
+        map_copy.clear();
+        t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "                 Map clear: " << t1 - t0 << std::endl;
       }
 
       std::shuffle(keys.begin(), keys.end(), engine);
@@ -144,7 +176,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "           std::map lookup: " << t1 - t0 << std::endl;
+        std::cout << "          std::map lookups: " << t1 - t0 << std::endl;
       }
 
       {
@@ -155,7 +187,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "                Map lookup: " << t1 - t0 << std::endl;
+        std::cout << "               Map lookups: " << t1 - t0 << std::endl;
       }
 
       std::shuffle(keys.begin(), keys.end(), engine);
@@ -168,7 +200,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "           std::map remove: " << t1 - t0 << std::endl;
+        std::cout << "         std::map removals: " << t1 - t0 << std::endl;
       }
 
       {
@@ -179,7 +211,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "                Map remove: " << t1 - t0 << std::endl;
+        std::cout << "              Map removals: " << t1 - t0 << std::endl;
       }
     }
 
@@ -247,19 +279,15 @@ namespace {
       }
     }
   }
-
-  void print_usage(const char* argv0) {
-    std::cerr << "Usage: " << argv0 << " [shift]" << std::endl;
-  }
 }
 
 int main(int argc, char* argv[]) {
   if (argc > 2) {
-    print_usage(argv[0]);
+    std::cerr << "Usage: " << argv[0] << " [shift]" << std::endl;
     return EXIT_FAILURE;
   }
 
-  std::size_t count = 1 << 10;
+  std::size_t count = static_cast<std::size_t>(1) << 10;
 
   if (argc > 1) {
     int shift;
@@ -267,7 +295,7 @@ int main(int argc, char* argv[]) {
     try {
       shift = std::stoi(std::string(argv[1]));
     } catch (const std::invalid_argument&) {
-      print_usage(argv[0]);
+      std::cerr << "Usage: " << argv[0] << " [shift]" << std::endl;
       return EXIT_FAILURE;
     } catch (const std::out_of_range&) {
       std::cerr << "<shift> out of range" << std::endl;
@@ -278,7 +306,7 @@ int main(int argc, char* argv[]) {
   }
 
   std::default_random_engine engine((std::random_device()()));
-  _check(count, engine);
+  check(count, engine);
   bench(count, engine);
   return EXIT_SUCCESS;
 }
