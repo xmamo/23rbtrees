@@ -108,7 +108,7 @@ static size_t Node_count(const Node* node) {
   return count;
 }
 
-static Node* Node_rotate(Node* B, Direction direction) {
+static Node* Node_rotate(Node* node, Direction direction) {
   //       C                         A
   //     ┌╌┴╌┐         →B          ┌╌┴╌┐
   //    →B   d       ┌╌╌┴╌╌┐       a   B←
@@ -117,6 +117,7 @@ static Node* Node_rotate(Node* B, Direction direction) {
   // ┌╌┴╌┐         a   b c   d         ┌╌┴╌┐
   // a   b                             c   d
 
+  Node* B = node;
   Node* CA = B->children[1 - direction];
   Node* parent = B->parent;
   Direction B_direction = B->direction;

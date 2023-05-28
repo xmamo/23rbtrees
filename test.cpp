@@ -29,8 +29,7 @@ namespace {
   int* volatile value_p;
 
 #ifndef NDEBUG
-  void
-  check(std::size_t count, std::default_random_engine& engine) {
+  void check(std::size_t count, std::default_random_engine& engine) {
     {
       cpp::Map<int, int> cpp_map;
 
