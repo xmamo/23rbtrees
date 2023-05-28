@@ -23,6 +23,8 @@ Map* map_copy(const Map* map);
 
 void map_clear(Map* map);
 
+void map_destroy(Map* map);
+
 void map_check(const Map* map);
 
 #endif

@@ -151,7 +151,7 @@ namespace {
             assert(value_p != NULL && *value_p == -key);
           }
 
-          map_clear(c_map_copy);
+          map_destroy(c_map_copy);
         }
 
         std::shuffle(keys.begin(), keys.end(), engine);
@@ -206,7 +206,7 @@ namespace {
         }
       }
 
-      map_clear(c_map);
+      map_destroy(c_map);
     }
   }
 #else
@@ -297,6 +297,8 @@ namespace {
         map_clear(c_map_copy);
         t1 = std::chrono::high_resolution_clock::now();
         std::cout << "               C Map clear: " << t1 - t0 << std::endl;
+
+        map_destroy(c_map);
       }
 
       std::shuffle(keys.begin(), keys.end(), engine);
@@ -458,6 +460,8 @@ namespace {
         std::cout << "   C Map random operations: " << t1 - t0 << std::endl;
       }
     }
+
+    map_destroy(c_map);
   }
 }
 

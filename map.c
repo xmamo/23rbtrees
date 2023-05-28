@@ -548,6 +548,11 @@ void map_clear(Map* map) {
   map->count = 0;
 }
 
+void map_destroy(Map* map) {
+  map_clear(map);
+  free(map);
+}
+
 void map_check(const Map* map) {
   assert(Node_is_black(map->root));
   Node_check(map->root);
