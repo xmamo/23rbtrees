@@ -136,13 +136,11 @@ class Map {
     /// @brief Retrieves the post-order predecessor or successor of this node, if any
     /// @param direction @c LEFT for the post-order predecessor, @c RIGHT for the post-order successor
     const Node* post_order_xcessor(Direction direction) const noexcept {
-      if (this->direction == direction)
-        return this->parent;
-
-      if (this->parent != nullptr && this->parent->children[direction] != nullptr)
+      if (this->direction != direction && this->parent != nullptr && this->parent->children[direction] != nullptr) {
         return this->parent->children[direction]->xmost_leaf(static_cast<Direction>(1 - direction));
-
-      return this->parent;
+      } else {
+        return this->parent;
+      }
     }
 
     /// @brief Retrieves the post-order predecessor or successor of this node, if any
@@ -218,9 +216,7 @@ public:
   /// @brief Constructs an empty map
   Map() noexcept : _root(nullptr), _count(0) {}
 
-  Map(const Map& other) : _root(nullptr) {
-    this->_count = other._count;
-
+  Map(const Map& other) {
     if (other._root != nullptr) {
       const Node* node0 = other._root;
 
@@ -242,8 +238,10 @@ public:
           direction = RIGHT;
         } else {
           while (node0->children[RIGHT] == nullptr || node1->children[RIGHT] != nullptr) {
-            if (node0->parent == nullptr)
+            if (node0->parent == nullptr) {
+              this->_count = other._count;
               return;
+            }
 
             node0 = node0->parent;
             node1 = node1->parent;
@@ -264,12 +262,13 @@ public:
         node0 = node0->children[direction];
         node1 = node1->children[direction];
       }
+    } else {  // if (other._root == nullptr)
+      this->_root = nullptr;
+      this->_count = 0;
     }
   }
 
-  Map(Map&& other) noexcept {
-    this->_root = other._root;
-    this->_count = other._count;
+  Map(Map&& other) noexcept : _root(other._root), _count(other._count) {
     other._root = nullptr;
     other._count = 0;
   }
@@ -414,7 +413,7 @@ public:
         node->parent->children[1 - node->direction]->color = BLACK;
         node->parent->color = RED;
         node = node->parent;
-      } else {
+      } else {  // if (Node::is_black(node->parent->children[1 - node->direction]))
         break;
       }
     }

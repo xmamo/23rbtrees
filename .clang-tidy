@@ -17,9 +17,10 @@ Checks: >-
   -modernize-use-default-member-init,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
+  -readability-else-after-return,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
-  -readability-magic-numbers
+  -readability-magic-numbers,
 
 CheckOptions:
   - {key: misc-const-correctness.AnalyzeValues, value: false}
