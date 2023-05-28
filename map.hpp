@@ -209,7 +209,7 @@ class Map {
   /// @brief The root of the red-black tree internal to this map
   Node* _root;
 
-  /// @brief The number of key-value pairs currently being stored in this map
+  /// @brief The number of key-value pairs stored in this map
   std::size_t _count;
 
 public:
