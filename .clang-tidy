@@ -1,6 +1,6 @@
 FormatStyle: file
 
-HeaderFilterRegex: .*\.hpp
+HeaderFilterRegex: .*\.h(pp)?
 
 Checks: >-
   bugprone-*,
@@ -16,7 +16,9 @@ Checks: >-
   -modernize-avoid-c-arrays,
   -modernize-use-default-member-init,
   -modernize-use-nodiscard,
+  -modernize-use-nullptr,
   -modernize-use-trailing-return-type,
+  -modernize-use-using,
   -readability-else-after-return,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
