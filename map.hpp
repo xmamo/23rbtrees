@@ -176,7 +176,7 @@ class Map {
       //   ┌╌┴╌┐    ◁    A     C    ▷    ┌╌┴╌┐
       //   A   c       ┌╌┴╌┐ ┌╌┴╌┐       b   C
       // ┌╌┴╌┐         a   b c   d         ┌╌┴╌┐
-      // a   b                             c   δ
+      // a   b                             c   d
 
       Node* B = this;
       Node* CA = B->children[1 - direction];
@@ -216,9 +216,9 @@ public:
   /// @brief Constructs an empty map
   Map() noexcept : _root(nullptr), _count(0) {}
 
-  Map(const Map& other) {
-    if (other._root != nullptr) {
-      const Node* node0 = other._root;
+  Map(const Map& map) {
+    if (map._root != nullptr) {
+      const Node* node0 = map._root;
 
       Node* node1 = this->_root = new Node{
         node0->key,
@@ -239,7 +239,7 @@ public:
         } else {
           while (node0->children[RIGHT] == nullptr || node1->children[RIGHT] != nullptr) {
             if (node0->parent == nullptr) {
-              this->_count = other._count;
+              this->_count = map._count;
               return;
             }
 
@@ -262,7 +262,7 @@ public:
         node0 = node0->children[direction];
         node1 = node1->children[direction];
       }
-    } else {  // if (other._root == nullptr)
+    } else {  // if (map._root == nullptr)
       this->_root = nullptr;
       this->_count = 0;
     }
@@ -321,7 +321,7 @@ public:
         node = node->children[LEFT];
       } else if (std::is_gt(ordering)) {
         node = node->children[RIGHT];
-      } else if (std::is_eq(ordering)) {
+      } else {
         return std::addressof(node->value);
       }
     }
@@ -351,7 +351,7 @@ public:
       } else if (std::is_gt(ordering)) {
         parent = node;
         node = node->children[node_direction = RIGHT];
-      } else if (std::is_eq(ordering)) {
+      } else {
         node->value = value;
         return;
       }
@@ -436,7 +436,7 @@ public:
           node = node->children[LEFT];
         } else if (std::is_gt(ordering)) {
           node = node->children[RIGHT];
-        } else if (std::is_eq(ordering)) {
+        } else {
           break;
         }
       } else {

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cstddef>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -8,105 +9,209 @@
 #include <map>
 #include <numeric>
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
+extern "C" {
+#include "comparator.h"
+#include "layout.h"
+#include "map.h"
+}
+
+namespace cpp {
 #include "map.hpp"
+}
 
 namespace {
+  volatile int value;
+  int* volatile value_p;
+
 #ifndef NDEBUG
-  void check(std::size_t count, std::default_random_engine& engine) {
-    Map<int, int> map;
-
+  void
+  check(std::size_t count, std::default_random_engine& engine) {
     {
-      std::vector<int> keys(count);
-      std::iota(keys.begin(), keys.end(), 0);
-      std::shuffle(keys.begin(), keys.end(), engine);
+      cpp::Map<int, int> cpp_map;
 
-      for (int key : keys) {
-        map.insert(key, -key);
-        map.check();
-        int* value = map.lookup(key);
-        assert(value != nullptr && *value == -key);
-      }
+      {
+        std::vector<int> keys(count);
+        std::iota(keys.begin(), keys.end(), 0);
+        std::shuffle(keys.begin(), keys.end(), engine);
 
-      std::shuffle(keys.begin(), keys.end(), engine);
+        for (int key : keys) {
+          cpp_map.insert(key, -key);
+          cpp_map.check();
+          value_p = cpp_map.lookup(key);
+          assert(value_p != nullptr && *value_p == -key);
+        }
 
-      for (int key : keys) {
-        int* value = map.lookup(key);
-        assert(value != nullptr && *value == -key);
+        std::shuffle(keys.begin(), keys.end(), engine);
+
+        for (int key : keys) {
+          value_p = cpp_map.lookup(key);
+          assert(value_p != nullptr && *value_p == -key);
+        }
+
+        {
+          cpp::Map<int, int> cpp_map_copy(cpp_map);
+          cpp_map_copy.check();
+
+          for (int key : keys) {
+            value_p = cpp_map_copy.lookup(key);
+            assert(value_p != nullptr && *value_p == -key);
+          }
+        }
+
+        std::shuffle(keys.begin(), keys.end(), engine);
+
+        for (int key : keys) {
+          cpp_map.remove(key);
+          cpp_map.check();
+          assert(cpp_map.lookup(key) == nullptr);
+        }
+
+        assert(cpp_map.count() == 0);
       }
 
       {
-        Map<int, int> map_copy(map);
-        map_copy.check();
+        enum Operation {
+          INSERT,
+          LOOKUP,
+          REMOVE,
+        };
 
-        for (int key : keys) {
-          int* value = map_copy.lookup(key);
-          assert(value != nullptr && *value == -key);
+        std::vector<std::pair<Operation, int>> operation_key_pairs;
+
+        for (std::size_t i = 0; i < count; ++i) {
+          operation_key_pairs.emplace_back(INSERT, i);
+          operation_key_pairs.emplace_back(LOOKUP, i);
+          operation_key_pairs.emplace_back(REMOVE, i);
+        }
+
+        std::shuffle(operation_key_pairs.begin(), operation_key_pairs.end(), engine);
+
+        for (auto [operation, key] : operation_key_pairs) {
+          switch (operation) {
+            case LOOKUP:
+              value_p = cpp_map.lookup(key);
+              assert(value_p == nullptr || *value_p == -key);
+              break;
+
+            case INSERT:
+              cpp_map.insert(key, -key);
+              cpp_map.check();
+              value_p = cpp_map.lookup(key);
+              assert(value_p != nullptr && *value_p == -key);
+              break;
+
+            case REMOVE:
+              cpp_map.remove(key);
+              cpp_map.check();
+              assert(cpp_map.lookup(key) == nullptr);
+              break;
+          }
         }
       }
-
-      std::shuffle(keys.begin(), keys.end(), engine);
-
-      for (int key : keys) {
-        map.remove(key);
-        map.check();
-        assert(map.lookup(key) == nullptr);
-      }
-
-      assert(map.count() == 0);
     }
 
     {
-      enum Operation {
-        INSERT,
-        LOOKUP,
-        REMOVE,
-      };
+      Map* c_map = map_new(
+        Layout{.size = sizeof(int), .alignment = alignof(int)},
+        Layout{.size = sizeof(int), .alignment = alignof(int)},
+        int_comparator
+      );
 
-      std::vector<std::pair<Operation, int>> operation_key_pairs;
+      {
+        std::vector<int> keys(count);
+        std::iota(keys.begin(), keys.end(), 0);
+        std::shuffle(keys.begin(), keys.end(), engine);
 
-      for (std::size_t i = 0; i < count; ++i) {
-        operation_key_pairs.emplace_back(INSERT, i);
-        operation_key_pairs.emplace_back(LOOKUP, i);
-        operation_key_pairs.emplace_back(REMOVE, i);
+        for (int key : keys) {
+          value = -key;
+          map_insert(c_map, &key, const_cast<int*>(&value));
+          map_check(c_map);
+          value_p = static_cast<int*>(map_lookup(c_map, &key));
+          assert(value_p != NULL && *value_p == value);
+        }
+
+        std::shuffle(keys.begin(), keys.end(), engine);
+
+        for (int key : keys) {
+          value_p = static_cast<int*>(map_lookup(c_map, &key));
+          assert(value_p != NULL && *value_p == -key);
+        }
+
+        {
+          struct Map* c_map_copy = map_copy(c_map);
+          map_check(c_map_copy);
+
+          for (int key : keys) {
+            value_p = static_cast<int*>(map_lookup(c_map_copy, &key));
+            assert(value_p != NULL && *value_p == -key);
+          }
+
+          map_clear(c_map_copy);
+        }
+
+        std::shuffle(keys.begin(), keys.end(), engine);
+
+        for (int key : keys) {
+          map_remove(c_map, &key);
+          map_check(c_map);
+          assert(map_lookup(c_map, &key) == NULL);
+        }
+
+        assert(map_count(c_map) == 0);
       }
 
-      std::shuffle(operation_key_pairs.begin(), operation_key_pairs.end(), engine);
+      {
+        enum Operation {
+          INSERT,
+          LOOKUP,
+          REMOVE,
+        };
 
-      for (auto [operation, key] : operation_key_pairs) {
-        switch (operation) {
-          case LOOKUP: {
-            int* value = map.lookup(key);
-            assert(value == nullptr || *value == -key);
-            break;
-          }
+        std::vector<std::pair<Operation, int>> operation_key_pairs;
 
-          case INSERT: {
-            map.insert(key, -key);
-            map.check();
-            int* value = map.lookup(key);
-            assert(value != nullptr && *value == -key);
-            break;
-          }
+        for (std::size_t i = 0; i < count; ++i) {
+          operation_key_pairs.emplace_back(INSERT, i);
+          operation_key_pairs.emplace_back(LOOKUP, i);
+          operation_key_pairs.emplace_back(REMOVE, i);
+        }
 
-          case REMOVE: {
-            map.remove(key);
-            assert(map.lookup(key) == nullptr);
-            break;
+        std::shuffle(operation_key_pairs.begin(), operation_key_pairs.end(), engine);
+
+        for (auto [operation, key] : operation_key_pairs) {
+          switch (operation) {
+            case LOOKUP:
+              value_p = static_cast<int*>(map_lookup(c_map, &key));
+              assert(value_p == NULL || *value_p == -key);
+              break;
+
+            case INSERT:
+              value = -key;
+              map_insert(c_map, &key, const_cast<int*>(&value));
+              map_check(c_map);
+              value_p = static_cast<int*>(map_lookup(c_map, &key));
+              assert(value_p != NULL && *value_p == value);
+              break;
+
+            case REMOVE:
+              map_remove(c_map, &key);
+              map_check(c_map);
+              assert(map_lookup(c_map, &key) == NULL);
+              break;
           }
         }
       }
+
+      map_clear(c_map);
     }
   }
 #else
 #define check(count, engine)
 #endif
-
-  volatile int value;
-  int* volatile value_p;
 
   template <typename Rep, typename Period>
   std::ostream& operator<<(std::ostream& os, std::chrono::duration<Rep, Period> duration) {
@@ -115,7 +220,13 @@ namespace {
 
   void bench(std::size_t count, std::default_random_engine& engine) {
     std::map<int, int> std_map;
-    Map<int, int> map;
+    cpp::Map<int, int> cpp_map;
+
+    Map* c_map = map_new(
+      Layout{.size = sizeof(int), .alignment = alignof(int)},
+      Layout{.size = sizeof(int), .alignment = alignof(int)},
+      int_comparator
+    );
 
     {
       std::vector<int> keys(count);
@@ -137,11 +248,23 @@ namespace {
         auto t0 = std::chrono::high_resolution_clock::now();
 
         for (int key : keys) {
-          map.insert(key, -key);
+          cpp_map.insert(key, -key);
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "            Map insertions: " << t1 - t0 << std::endl;
+        std::cout << "        C++ Map insertions: " << t1 - t0 << std::endl;
+      }
+
+      {
+        auto t0 = std::chrono::high_resolution_clock::now();
+
+        for (int key : keys) {
+          value = -key;
+          map_insert(c_map, &key, const_cast<int*>(&value));
+        }
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "          C Map insertions: " << t1 - t0 << std::endl;
       }
 
       {
@@ -151,9 +274,14 @@ namespace {
         std::cout << "             std::map copy: " << t1 - t0 << std::endl;
 
         t0 = std::chrono::high_resolution_clock::now();
-        Map<int, int> map_copy(map);
+        cpp::Map<int, int> cpp_map_copy(cpp_map);
         t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "                  Map copy: " << t1 - t0 << std::endl;
+        std::cout << "              C++ Map copy: " << t1 - t0 << std::endl;
+
+        t0 = std::chrono::high_resolution_clock::now();
+        Map* c_map_copy = map_copy(c_map);
+        t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "                C Map copy: " << t1 - t0 << std::endl;
 
         t0 = std::chrono::high_resolution_clock::now();
         std_map_copy.clear();
@@ -161,9 +289,14 @@ namespace {
         std::cout << "            std::map clear: " << t1 - t0 << std::endl;
 
         t0 = std::chrono::high_resolution_clock::now();
-        map_copy.clear();
+        cpp_map_copy.clear();
         t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "                 Map clear: " << t1 - t0 << std::endl;
+        std::cout << "             C++ Map clear: " << t1 - t0 << std::endl;
+
+        t0 = std::chrono::high_resolution_clock::now();
+        map_clear(c_map_copy);
+        t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "               C Map clear: " << t1 - t0 << std::endl;
       }
 
       std::shuffle(keys.begin(), keys.end(), engine);
@@ -183,11 +316,22 @@ namespace {
         auto t0 = std::chrono::high_resolution_clock::now();
 
         for (int key : keys) {
-          value_p = map.lookup(key);
+          value_p = cpp_map.lookup(key);
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "               Map lookups: " << t1 - t0 << std::endl;
+        std::cout << "           C++ Map lookups: " << t1 - t0 << std::endl;
+      }
+
+      {
+        auto t0 = std::chrono::high_resolution_clock::now();
+
+        for (int key : keys) {
+          value_p = static_cast<int*>(map_lookup(c_map, &key));
+        }
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "             C Map lookups: " << t1 - t0 << std::endl;
       }
 
       std::shuffle(keys.begin(), keys.end(), engine);
@@ -207,11 +351,22 @@ namespace {
         auto t0 = std::chrono::high_resolution_clock::now();
 
         for (int key : keys) {
-          map.remove(key);
+          cpp_map.remove(key);
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "              Map removals: " << t1 - t0 << std::endl;
+        std::cout << "          C++ Map removals: " << t1 - t0 << std::endl;
+      }
+
+      {
+        auto t0 = std::chrono::high_resolution_clock::now();
+
+        for (int key : keys) {
+          map_remove(c_map, &key);
+        }
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "            C Map removals: " << t1 - t0 << std::endl;
       }
     }
 
@@ -261,21 +416,46 @@ namespace {
         for (auto [operation, key] : operation_key_pairs) {
           switch (operation) {
             case LOOKUP:
-              value_p = map.lookup(key);
+              value_p = cpp_map.lookup(key);
               break;
 
             case INSERT:
-              map.insert(key, -key);
+              cpp_map.insert(key, -key);
               break;
 
             case REMOVE:
-              map.remove(key);
+              cpp_map.remove(key);
               break;
           }
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "     Map random operations: " << t1 - t0 << std::endl;
+        std::cout << " C++ Map random operations: " << t1 - t0 << std::endl;
+      }
+
+      {
+        auto t0 = std::chrono::high_resolution_clock::now();
+
+        for (auto [operation, key] : operation_key_pairs) {
+          switch (operation) {
+            case LOOKUP:
+              value_p = static_cast<int*>(map_lookup(c_map, &key));
+              break;
+
+            case INSERT: {
+              value = -key;
+              map_insert(c_map, &key, const_cast<int*>(&value));
+              break;
+            }
+
+            case REMOVE:
+              map_remove(c_map, &key);
+              break;
+          }
+        }
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        std::cout << "   C Map random operations: " << t1 - t0 << std::endl;
       }
     }
   }
