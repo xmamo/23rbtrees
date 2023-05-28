@@ -172,6 +172,12 @@ Map* map_new(Layout key_layout, Layout value_layout, Comparator comparator) {
   return map;
 }
 
+void map_check(const Map* map) {
+  assert(Node_is_black(map->root));
+  Node_check(map->root);
+  assert(Node_count(map->root) == map->count);
+}
+
 size_t map_count(const Map* map) {
   return map->count;
 }
@@ -551,10 +557,4 @@ void map_clear(Map* map) {
 void map_destroy(Map* map) {
   map_clear(map);
   free(map);
-}
-
-void map_check(const Map* map) {
-  assert(Node_is_black(map->root));
-  Node_check(map->root);
-  assert(Node_count(map->root) == map->count);
 }

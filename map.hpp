@@ -273,22 +273,6 @@ public:
     other._count = 0;
   }
 
-  /// @brief Empties this map, clearing all associations from keys to values
-  void clear() noexcept {
-    if (this->_root != nullptr) {
-      Node* node = this->_root->xmost_leaf(LEFT);
-
-      do {
-        Node* post_order_successor = node->post_order_xcessor(RIGHT);
-        delete node;
-        node = post_order_successor;
-      } while (node != nullptr);
-    }
-
-    this->_root = nullptr;
-    this->_count = 0;
-  }
-
   ~Map() noexcept {
     this->clear();
   }
@@ -552,6 +536,22 @@ public:
     //    a   b     a   b
     node->color = BLACK;
     return true;
+  }
+
+  /// @brief Empties this map, clearing all associations from keys to values
+  void clear() noexcept {
+    if (this->_root != nullptr) {
+      Node* node = this->_root->xmost_leaf(LEFT);
+
+      do {
+        Node* post_order_successor = node->post_order_xcessor(RIGHT);
+        delete node;
+        node = post_order_successor;
+      } while (node != nullptr);
+    }
+
+    this->_root = nullptr;
+    this->_count = 0;
   }
 };
 

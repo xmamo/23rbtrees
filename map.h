@@ -11,6 +11,8 @@ typedef struct Map Map;
 
 Map* map_new(Layout key_layout, Layout value_layout, Comparator comparator);
 
+void map_check(const Map* map);
+
 size_t map_count(const Map* map);
 
 void* map_lookup(const Map* map, const void* key);
@@ -24,7 +26,5 @@ Map* map_copy(const Map* map);
 void map_clear(Map* map);
 
 void map_destroy(Map* map);
-
-void map_check(const Map* map);
 
 #endif
