@@ -2,17 +2,16 @@
 #define MAP_HPP
 
 #include <cassert>
-#include <compare>
-#include <concepts>
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <stdexcept>
 
 /// @brief Ordered map data type, associating keys to values
-/// @tparam K The type of keys
-/// @tparam V The type of values
-template <typename K, typename V>
-requires std::three_way_comparable<K, std::weak_ordering> && std::copyable<K> && std::copyable<V>
+/// @tparam Key The type of keys
+/// @tparam Value The type of values
+/// @tparam Less The type of the key comparator
+template <typename Key, typename Value, typename Less = std::less<Key>>
 class Map {
   // This implementation is based on the algorithms for 2-3 red-black trees described in the
   // following paper: https://arxiv.org/abs/2004.04344. It is written to be hopefully more readable
@@ -37,10 +36,10 @@ class Map {
   /// @brief Red-black tree node data type
   struct Node {
     /// @brief The key stored by the node
-    K key;
+    Key key;
 
     /// @brief The value stored by the node
-    V value;
+    Value value;
 
     /// @brief The children of the node
     Node* children[2];
@@ -212,9 +211,12 @@ class Map {
   /// @brief The number of key-value pairs stored by the map
   std::size_t _count;
 
+  /// @brief The key comparator
+  Less _less;
+
 public:
   /// @brief Constructs an empty map
-  Map() noexcept : _root(nullptr), _count(0) {}
+  Map(Less less = std::less<Key>()) noexcept : _root(nullptr), _count(0), _less(less) {}
 
   Map(const Map& map) {
     if (map._root != nullptr) {
@@ -295,15 +297,13 @@ public:
   }
 
   /// @brief Finds the value associated to a given key, if any
-  const V* lookup(const K& key) const noexcept {
+  const Value* lookup(const Key& key) const noexcept {
     const Node* node = this->_root;
 
     while (node != nullptr) {
-      std::weak_ordering ordering = key <=> node->key;
-
-      if (std::is_lt(ordering)) {
+      if (this->_less(key, node->key)) {
         node = node->children[LEFT];
-      } else if (std::is_gt(ordering)) {
+      } else if (this->_less(node->key, key)) {
         node = node->children[RIGHT];
       } else {
         return std::addressof(node->value);
@@ -314,12 +314,12 @@ public:
   }
 
   /// @brief Finds the value associated to a key, if any
-  V* lookup(const K& key) noexcept {
-    return const_cast<V*>(const_cast<const Map*>(this)->lookup(key));
+  Value* lookup(const Key& key) noexcept {
+    return const_cast<Value*>(const_cast<const Map*>(this)->lookup(key));
   }
 
   /// @brief Associates a key to a value
-  void insert(const K& key, const V& value) {
+  void insert(const Key& key, const Value& value) {
     // Top-down pass:
 
     Node* node = this->_root;
@@ -327,12 +327,10 @@ public:
     Direction node_direction = LEFT;
 
     while (node != nullptr) {
-      std::weak_ordering ordering = key <=> node->key;
-
-      if (std::is_lt(ordering)) {
+      if (this->_less(key, node->key)) {
         parent = node;
         node = node->children[node_direction = LEFT];
-      } else if (std::is_gt(ordering)) {
+      } else if (this->_less(node->key, key)) {
         parent = node;
         node = node->children[node_direction = RIGHT];
       } else {
@@ -407,18 +405,16 @@ public:
 
   /// @brief Removes the value associated to a key, if any
   /// @return @c true if an association to the key existed prior to removal, @c false otherwise
-  bool remove(const K& key) {
+  bool remove(const Key& key) {
     // Top-down pass:
 
     Node* node = this->_root;
 
     while (true) {
       if (node != nullptr) {
-        std::weak_ordering ordering = key <=> node->key;
-
-        if (std::is_lt(ordering)) {
+        if (this->_less(key, node->key)) {
           node = node->children[LEFT];
-        } else if (std::is_gt(ordering)) {
+        } else if (this->_less(node->key, key)) {
           node = node->children[RIGHT];
         } else {
           break;
