@@ -208,7 +208,7 @@ Map* map_new(Layout key_layout, Layout value_layout, Comparator comparator) {
     map->comparator = comparator;
 
     Layout layout = layout_init();
-    layout_add(&layout, (Layout){sizeof(Node), alignof(Node)});
+    layout_add(&layout, (Layout){.size = offsetof(Node, data), .alignment = alignof(Node)});
     size_t key_offset = layout_add(&layout, key_layout);
     size_t value_offset = layout_add(&layout, value_layout);
     map->node_layout.size = layout_build(&layout).size;
