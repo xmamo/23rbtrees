@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 set(PROJECT_LANGUAGES C CXX)
 project(rbtree VERSION 1.0.0 LANGUAGES ${PROJECT_LANGUAGES})
@@ -10,10 +10,8 @@ foreach(LANGUAGE ${PROJECT_LANGUAGES})
     set(${LANGUAGE}_COMPILER ${CMAKE_${LANGUAGE}_SIMULATE_ID})
   endif()
 
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-    if(NOT "${CMAKE_${LANGUAGE}_COMPILER_FRONTEND_VARIANT}" STREQUAL "")
-      set(${LANGUAGE}_COMPILER ${CMAKE_${LANGUAGE}_COMPILER_FRONTEND_VARIANT})
-    endif()
+  if(NOT "${CMAKE_${LANGUAGE}_COMPILER_FRONTEND_VARIANT}" STREQUAL "")
+    set(${LANGUAGE}_COMPILER ${CMAKE_${LANGUAGE}_COMPILER_FRONTEND_VARIANT})
   endif()
 
   if(${LANGUAGE}_COMPILER MATCHES "^(GNU|(ARM|Apple)?Clang|Intel(LLVM)?)$")
@@ -34,6 +32,6 @@ foreach(LANGUAGE ${PROJECT_LANGUAGES})
 endforeach()
 
 add_executable(test allocator.c comparator.c layout.c map.c test.cpp)
-target_compile_features(test PRIVATE cxx_std_20)
+target_compile_features(test PRIVATE cxx_std_11)
 target_compile_features(test PRIVATE c_std_11)
 set_target_properties(test PROPERTIES CXX_CLANG_TIDY "clang-tidy;-p;${CMAKE_CURRENT_BINARY_DIR}")

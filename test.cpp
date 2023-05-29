@@ -116,8 +116,8 @@ namespace {
 
     {
       Map* c_map = map_new(
-        Layout{.size = sizeof(int), .alignment = alignof(int)},
-        Layout{.size = sizeof(int), .alignment = alignof(int)},
+        Layout{sizeof(int), alignof(int)},
+        Layout{sizeof(int), alignof(int)},
         int_comparator
       );
 
@@ -222,8 +222,8 @@ namespace {
     cpp::Map<int, int> cpp_map;
 
     Map* c_map = map_new(
-      Layout{.size = sizeof(int), .alignment = alignof(int)},
-      Layout{.size = sizeof(int), .alignment = alignof(int)},
+      Layout{sizeof(int), alignof(int)},
+      Layout{sizeof(int), alignof(int)},
       int_comparator
     );
 

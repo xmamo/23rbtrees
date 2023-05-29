@@ -36,7 +36,7 @@ typedef struct Node {
 
 /// @brief The layout of a @c Node
 typedef struct Node_layout {
-  /// @brief The total size of a the node, including the key-value pair stored in its FAM
+  /// @brief The total size of the node, including the key-value pair stored in its FAM
   size_t size;
 
   /// @brief The offset in which the key is stored, relative to the beginning of the node
