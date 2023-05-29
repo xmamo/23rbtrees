@@ -398,7 +398,7 @@ public:
 
   /// @brief Removes the value associated to a key, if any
   /// @return @c true if an association to the key existed prior to removal, @c false otherwise
-  bool remove(const Key& key) {
+  bool remove(const Key& key) noexcept {
     // Top-down pass:
 
     Node* node = this->_root;
