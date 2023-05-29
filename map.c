@@ -37,7 +37,7 @@ typedef struct Node {
 
 /// @brief The layout of a @c Node
 typedef struct Node_layout {
-  /// @brief The total size of a the node, including the key-value pair stored in its FAM @c data
+  /// @brief The total size of a the node, including the key-value pair stored in its FAM
   size_t size;
 
   /// @brief The offset in which the key is stored, relative to the beginning of the node
@@ -148,7 +148,7 @@ static size_t node_count(const Node* node) {
 /// @brief Rotates a tree
 /// @return The root of the now rotated tree
 /// @note It is the callee’s responsibility to update the relevant child pointer of the parent
-/// @pre `this->children[1 - direction] != NULL`
+/// @pre `node->children[1 - direction] != NULL`
 static Node* node_rotate(Node* node, Direction direction) {
   //       C                         A
   //     ┌╌┴╌┐         →B          ┌╌┴╌┐
@@ -186,9 +186,16 @@ static Node* node_rotate(Node* node, Direction direction) {
 }
 
 struct Map {
+  /// @brief The root of the red-black tree internal to the map
   Node* root;
+
+  /// @brief The number of key-value pairs stored by the map
   size_t count;
+
+  /// @brief The comparator to use to compare keys
   Comparator comparator;
+
+  /// @brief The layout of nodes, providing information to allocate nodes or access their data
   Node_layout node_layout;
 };
 

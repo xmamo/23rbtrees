@@ -206,10 +206,10 @@ class Map {
     }
   };
 
-  /// @brief The root of the red-black tree internal to this map
+  /// @brief The root of the red-black tree internal to the map
   Node* _root;
 
-  /// @brief The number of key-value pairs stored in this map
+  /// @brief The number of key-value pairs stored by the map
   std::size_t _count;
 
 public:
@@ -289,7 +289,7 @@ public:
       throw std::logic_error("Node::count(this->_root) != this->_count");
   }
 
-  /// @brief Returns the number of key-value pairs currently being stored in this map
+  /// @brief Returns the number of key-value pairs currently being stored by this map
   std::size_t count() const noexcept {
     return this->_count;
   }
