@@ -390,7 +390,7 @@ public:
         //      ╷               ╻               ╷
         //      B              →B               B
         //   ┏━━┷━━┓    ▷    ┌──┴──┐    ◁    ┏━━┷━━┓
-        //  →A     C         A     C         A    →C
+        //  →A     C         A     C         A     C←
         // ┌─┴─┐ ┌─┴─┐     ┌─┴─┐ ┌─┴─┐     ┌─┴─┐ ┌─┴─┐
         // a   b c   d     a   b c   d     a   b c   d
         node->color = BLACK;
@@ -468,9 +468,9 @@ public:
         //                              Rule from Figure 13c:
         //          D                 B           ╎           D                 B
         //      ┏━━━┵───┐         ┌───┶━━━┓       ╎       ┏━━━┵───┐         ┌───┶━━━┓
-        //      B      →E         A       D       ╎       B       E        →A       D
+        //      B       E←        A       D       ╎       B       E        →A       D
         //   ┌──┴──┐  ┌─┴─┐  ▷  ┌─┴─┐  ┌──┴──┐    ╎    ┌──┴──┐  ┌─┴─┐  ◁  ┌─┴─┐  ┌──┴──┐
-        //   A     C  e   f     a   b  C    →E    ╎   →A     C  e   f     a   b  C     E
+        //   A     C  e   f     a   b  C     E←   ╎   →A     C  e   f     a   b  C     E
         // ┌─┴─┐ ┌─┴─┐               ┌─┴─┐ ┌─┴─┐  ╎  ┌─┴─┐ ┌─┴─┐               ┌─┴─┐ ┌─┴─┐
         // a   b c   d               c   d e   f  ╎  a   b c   d               c   d e   f
         Node* DB = parent->rotate(node_direction);
