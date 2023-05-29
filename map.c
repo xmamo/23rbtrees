@@ -194,10 +194,10 @@ struct Map {
   /// @brief The layout of nodes, providing information to allocate nodes or access their data
   Node_layout node_layout;
 
-  /// @brief The comparator to use to compare keys
+  /// @brief The key comparator
   Comparator comparator;
 
-  /// @brief The allocator to be used
+  /// @brief The allocator
   Allocator allocator;
 };
 
