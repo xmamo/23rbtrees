@@ -543,8 +543,6 @@ Map* map_copy_with(const Map* map, Allocator allocator) {
 
           if (node0->children[LEFT] != NULL) {
             direction = LEFT;
-          } else if (node0->children[RIGHT] != NULL) {
-            direction = RIGHT;
           } else {
             while (node0->children[RIGHT] == NULL || node1->children[RIGHT] != NULL) {
               if (node0->parent == NULL) {

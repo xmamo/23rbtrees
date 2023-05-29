@@ -44,7 +44,7 @@ Map* map_copy(const Map* map);
 /// @return The copied map, or @c NULL if memory could not be allocated
 Map* map_copy_with(const Map* map, Allocator allocator);
 
-/// @brief Empties a map, clearing all associations from keys to values
+/// @brief Clears a map, removing all key-value associations
 void map_clear(Map* map);
 
 /// @brief Clears and deallocates a map

@@ -207,9 +207,10 @@ class Map {
   Less _less;
 
 public:
-  /// @brief Constructs an empty map
+  /// @brief Initializes an empty map
   Map(Less less = std::less<Key>()) noexcept : _root(nullptr), _count(0), _less(less) {}
 
+  /// @brief Copies a map
   Map(const Map& map) {
     if (map._root != nullptr) {
       const Node* node0 = map._root;
@@ -228,8 +229,6 @@ public:
 
         if (node0->children[LEFT] != nullptr) {
           direction = LEFT;
-        } else if (node0->children[RIGHT] != nullptr) {
-          direction = RIGHT;
         } else {
           while (node0->children[RIGHT] == nullptr || node1->children[RIGHT] != nullptr) {
             if (node0->parent == nullptr) {
@@ -262,11 +261,13 @@ public:
     }
   }
 
+  /// @brief Moves a map
   Map(Map&& other) noexcept : _root(other._root), _count(other._count) {
     other._root = nullptr;
     other._count = 0;
   }
 
+  /// @brief Clears and deallocates this map
   ~Map() noexcept {
     this->clear();
   }
@@ -283,7 +284,7 @@ public:
       throw std::logic_error("Node::count(this->_root) != this->_count");
   }
 
-  /// @brief Returns the number of key-value pairs currently being stored by this map
+  /// @brief Returns the number of key-value pairs stored by a map
   std::size_t count() const noexcept {
     return this->_count;
   }
@@ -526,7 +527,7 @@ public:
     return true;
   }
 
-  /// @brief Empties this map, clearing all associations from keys to values
+  /// @brief Clears this map, removing all key-value associations
   void clear() noexcept {
     if (this->_root != nullptr) {
       Node* node = this->_root->xmost_leaf(LEFT);
