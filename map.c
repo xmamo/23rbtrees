@@ -191,11 +191,11 @@ struct Map {
   /// @brief The number of key-value pairs stored by the map
   size_t count;
 
-  /// @brief The comparator to use to compare keys
-  Comparator comparator;
-
   /// @brief The layout of nodes, providing information to allocate nodes or access their data
   Node_layout node_layout;
+
+  /// @brief The comparator to use to compare keys
+  Comparator comparator;
 
   /// @brief The allocator to be used
   Allocator allocator;
@@ -214,7 +214,6 @@ Map* map_new_with(Layout key_layout, Layout value_layout, Comparator comparator,
   if (map != NULL) {
     map->root = NULL;
     map->count = 0;
-    map->comparator = comparator;
 
     Layout layout = {.size = offsetof(Node, data), .alignment = alignof(Node)};
     size_t key_offset = layout_add(&layout, key_layout);
@@ -225,6 +224,7 @@ Map* map_new_with(Layout key_layout, Layout value_layout, Comparator comparator,
     map->node_layout.value_offset = value_offset;
     map->node_layout.value_size = value_layout.size;
 
+    map->comparator = comparator;
     map->allocator = allocator;
   }
 
@@ -549,8 +549,8 @@ Map* map_copy_with(const Map* map, Allocator allocator) {
             while (node0->children[RIGHT] == NULL || node1->children[RIGHT] != NULL) {
               if (node0->parent == NULL) {
                 new_map->count = map->count;
-                new_map->comparator = map->comparator;
                 new_map->node_layout = map->node_layout;
+                new_map->comparator = map->comparator;
                 new_map->allocator = allocator;
                 return new_map;
               }
@@ -598,8 +598,8 @@ Map* map_copy_with(const Map* map, Allocator allocator) {
     } else {  // if (map->root == NULL)
       new_map->root = NULL;
       new_map->count = 0;
-      new_map->comparator = map->comparator;
       new_map->node_layout = map->node_layout;
+      new_map->comparator = map->comparator;
       new_map->allocator = allocator;
     }
   }
