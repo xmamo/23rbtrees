@@ -12,13 +12,13 @@ static int _char_compare(const void* comparator, const void* _x, const void* _y)
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _char_comarator_methods = {
+static const Comparator_methods _char_comparator_methods = {
   .compare = _char_compare,
 };
 
 const Comparator char_comparator = {
   .data = NULL,
-  .methods = &_char_comarator_methods,
+  .methods = &_char_comparator_methods,
 };
 
 static int _wchar_compare(const void* comparator, const void* _x, const void* _y) {
@@ -28,13 +28,13 @@ static int _wchar_compare(const void* comparator, const void* _x, const void* _y
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _wchar_comarator_methods = {
+static const Comparator_methods _wchar_comparator_methods = {
   .compare = _wchar_compare,
 };
 
 const Comparator wchar_comparator = {
   .data = NULL,
-  .methods = &_wchar_comarator_methods,
+  .methods = &_wchar_comparator_methods,
 };
 
 static int _schar_compare(const void* comparator, const void* _x, const void* _y) {
@@ -44,13 +44,13 @@ static int _schar_compare(const void* comparator, const void* _x, const void* _y
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _schar_comarator_methods = {
+static const Comparator_methods _schar_comparator_methods = {
   .compare = _schar_compare,
 };
 
 const Comparator schar_comparator = {
   .data = NULL,
-  .methods = &_schar_comarator_methods,
+  .methods = &_schar_comparator_methods,
 };
 
 static int _short_compare(const void* comparator, const void* _x, const void* _y) {
@@ -60,13 +60,13 @@ static int _short_compare(const void* comparator, const void* _x, const void* _y
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _short_comarator_methods = {
+static const Comparator_methods _short_comparator_methods = {
   .compare = _short_compare,
 };
 
 const Comparator short_comparator = {
   .data = NULL,
-  .methods = &_short_comarator_methods,
+  .methods = &_short_comparator_methods,
 };
 
 static int _int_compare(const void* comparator, const void* _x, const void* _y) {
@@ -76,13 +76,13 @@ static int _int_compare(const void* comparator, const void* _x, const void* _y) 
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _int_comarator_methods = {
+static const Comparator_methods _int_comparator_methods = {
   .compare = _int_compare,
 };
 
 const Comparator int_comparator = {
   .data = NULL,
-  .methods = &_int_comarator_methods,
+  .methods = &_int_comparator_methods,
 };
 
 static int _long_compare(const void* comparator, const void* _x, const void* _y) {
@@ -92,13 +92,13 @@ static int _long_compare(const void* comparator, const void* _x, const void* _y)
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _long_comarator_methods = {
+static const Comparator_methods _long_comparator_methods = {
   .compare = _long_compare,
 };
 
 const Comparator long_comparator = {
   .data = NULL,
-  .methods = &_long_comarator_methods,
+  .methods = &_long_comparator_methods,
 };
 
 static int _llong_compare(const void* comparator, const void* _x, const void* _y) {
@@ -108,13 +108,13 @@ static int _llong_compare(const void* comparator, const void* _x, const void* _y
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _llong_comarator_methods = {
+static const Comparator_methods _llong_comparator_methods = {
   .compare = _llong_compare,
 };
 
 const Comparator llong_comparator = {
   .data = NULL,
-  .methods = &_llong_comarator_methods,
+  .methods = &_llong_comparator_methods,
 };
 
 static int _uchar_compare(const void* comparator, const void* _x, const void* _y) {
@@ -124,13 +124,13 @@ static int _uchar_compare(const void* comparator, const void* _x, const void* _y
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _uchar_comarator_methods = {
+static const Comparator_methods _uchar_comparator_methods = {
   .compare = _uchar_compare,
 };
 
 const Comparator uchar_comparator = {
   .data = NULL,
-  .methods = &_uchar_comarator_methods,
+  .methods = &_uchar_comparator_methods,
 };
 
 static int _ushort_compare(const void* comparator, const void* _x, const void* _y) {
@@ -140,13 +140,13 @@ static int _ushort_compare(const void* comparator, const void* _x, const void* _
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _ushort_comarator_methods = {
+static const Comparator_methods _ushort_comparator_methods = {
   .compare = _ushort_compare,
 };
 
 const Comparator ushort_comparator = {
   .data = NULL,
-  .methods = &_ushort_comarator_methods,
+  .methods = &_ushort_comparator_methods,
 };
 
 static int _uint_compare(const void* comparator, const void* _x, const void* _y) {
@@ -156,13 +156,13 @@ static int _uint_compare(const void* comparator, const void* _x, const void* _y)
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _uint_comarator_methods = {
+static const Comparator_methods _uint_comparator_methods = {
   .compare = _uint_compare,
 };
 
 const Comparator uint_comparator = {
   .data = NULL,
-  .methods = &_uint_comarator_methods,
+  .methods = &_uint_comparator_methods,
 };
 
 static int _ulong_compare(const void* comparator, const void* _x, const void* _y) {
@@ -172,13 +172,13 @@ static int _ulong_compare(const void* comparator, const void* _x, const void* _y
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _ulong_comarator_methods = {
+static const Comparator_methods _ulong_comparator_methods = {
   .compare = _ulong_compare,
 };
 
 const Comparator ulong_comparator = {
   .data = NULL,
-  .methods = &_ulong_comarator_methods,
+  .methods = &_ulong_comparator_methods,
 };
 
 static int _ullong_compare(const void* comparator, const void* _x, const void* _y) {
@@ -188,13 +188,13 @@ static int _ullong_compare(const void* comparator, const void* _x, const void* _
   return x < y ? -1 : (x > y ? +1 : 0);
 }
 
-static const Comparator_methods _ullong_comarator_methods = {
+static const Comparator_methods _ullong_comparator_methods = {
   .compare = _ullong_compare,
 };
 
 const Comparator ullong_comparator = {
   .data = NULL,
-  .methods = &_ullong_comarator_methods,
+  .methods = &_ullong_comparator_methods,
 };
 
 static int _float_compare(const void* comparator, const void* _x, const void* _y) {

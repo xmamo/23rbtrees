@@ -10,6 +10,10 @@ typedef struct Comparator {
   const Comparator_methods* methods;
 } Comparator;
 
+static inline int comparator_compare(Comparator comparator, const void* x, const void* y) {
+  return comparator.methods->compare(comparator.data, x, y);
+}
+
 extern const Comparator char_comparator;
 extern const Comparator wchar_comparator;
 
@@ -31,9 +35,5 @@ extern const Comparator ldouble_comparator;
 
 extern const Comparator string_comparator;
 extern const Comparator wstring_comparator;
-
-static inline int comparator_compare(Comparator comparator, const void* x, const void* y) {
-  return comparator.methods->compare(comparator.data, x, y);
-}
 
 #endif
