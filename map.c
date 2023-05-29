@@ -216,7 +216,7 @@ Map* map_new_with(Layout key_layout, Layout value_layout, Comparator comparator,
     layout_add(&layout, (Layout){.size = offsetof(Node, data), .alignment = alignof(Node)});
     size_t key_offset = layout_add(&layout, key_layout);
     size_t value_offset = layout_add(&layout, value_layout);
-    map->node_layout.size = layout_pad(&layout).size;
+    map->node_layout.size = layout_pad(&layout);
     map->node_layout.key_offset = key_offset;
     map->node_layout.key_size = key_layout.size;
     map->node_layout.value_offset = value_offset;

@@ -27,18 +27,18 @@ size_t layout_add(Layout* layout, Layout member_layout) {
   return member_offset;
 }
 
-Layout layout_pad(const Layout* layout) {
+size_t layout_pad(Layout* layout) {
   size_t alignment = layout->alignment;
 
   if (alignment == 0) {
     alignment = 1;
   }
 
-  size_t size = (layout->size / alignment) * alignment;
+  size_t new_size = (layout->size / alignment) * alignment;
 
-  while (size < layout->size) {
-    size += alignment;
+  while (new_size < layout->size) {
+    new_size += alignment;
   }
 
-  return (Layout){.size = size, .alignment = alignment};
+  return layout->size = new_size;
 }

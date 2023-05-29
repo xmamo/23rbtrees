@@ -20,6 +20,7 @@ Layout layout_empty(void);
 size_t layout_add(Layout* layout, Layout member_layout);
 
 /// @brief Rounds up the size of a layout to the nearest multiple of its alignment
-Layout layout_pad(const Layout* layout);
+/// @return The new size of the layout
+size_t layout_pad(Layout* layout);
 
 #endif
