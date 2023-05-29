@@ -197,15 +197,19 @@ struct Map {
   /// @brief The layout of nodes, providing information to allocate nodes or access their data
   Node_layout node_layout;
 
+  /// @brief The allocator to be used
   Allocator allocator;
 };
+
+/// @brief The size of the @c Map struct, excluding trailing padding bytes
+#define MAP_SIZE (offsetof(Map, allocator) + sizeof(Allocator))
 
 Map* map_new(Layout key_layout, Layout value_layout, Comparator comparator) {
   return map_new_with(key_layout, value_layout, comparator, heap_allocator);
 }
 
 Map* map_new_with(Layout key_layout, Layout value_layout, Comparator comparator, Allocator allocator) {
-  Map* map = allocator_allocate(allocator, sizeof(Map));
+  Map* map = allocator_allocate(allocator, MAP_SIZE);
 
   if (map != NULL) {
     map->root = NULL;
@@ -506,7 +510,7 @@ Map* map_copy(const Map* map) {
 }
 
 Map* map_copy_with(const Map* map, Allocator allocator) {
-  Map* new_map = allocator_allocate(allocator, sizeof(Map));
+  Map* new_map = allocator_allocate(allocator, MAP_SIZE);
 
   if (new_map != NULL) {
     if (map->root != NULL) {
