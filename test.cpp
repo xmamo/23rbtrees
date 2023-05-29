@@ -297,7 +297,7 @@ namespace {
         t1 = std::chrono::high_resolution_clock::now();
         std::cout << "               C Map clear: " << t1 - t0 << std::endl;
 
-        map_destroy(c_map);
+        map_destroy(c_map_copy);
       }
 
       std::shuffle(keys.begin(), keys.end(), engine);

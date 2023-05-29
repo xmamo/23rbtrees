@@ -5,49 +5,79 @@
 #include <stdlib.h>
 #include <string.h>
 
+/// @brief Red-black color enumeration
 typedef enum Color {
   BLACK = 0,
   RED = 1,
 } Color;
 
+/// @brief Left-right direction enumeration
 typedef enum Direction {
   LEFT = 0,
   RIGHT = 1,
 } Direction;
 
+/// @brief Red-black tree node data type
 typedef struct Node {
+  /// @brief The children of the node
   struct Node* children[2];
+
+  /// @brief The parent of the node
   struct Node* parent;
+
+  /// @brief The direction of the node, determining if it is the left or right child of its parent
   unsigned char direction;
+
+  /// @brief The color of the node
   unsigned char color;
+
+  /// @brief The key-value pair stored by the node
   char data[];
 } Node;
 
+/// @brief The layout of a @c Node
 typedef struct Node_layout {
+  /// @brief The total size of a the node, including the key-value pair stored in its FAM @c data
   size_t size;
+
+  /// @brief The offset in which the key is stored, relative to the beginning of the node
   size_t key_offset;
+
+  /// @brief The size of the key stored by the node
   size_t key_size;
+
+  /// @brief The offset in which the value is stored, relative to the beginning of the node
   size_t value_offset;
+
+  /// @brief The size of the value stored by the node
   size_t value_size;
 } Node_layout;
 
-static inline void* Node_key(const Node* node, const Node_layout* layout) {
+/// @brief Gets the pointer to the key stored by a node
+static inline void* node_key(const Node* node, const Node_layout* layout) {
   return (char*)node + layout->key_offset;
 }
 
-static inline void* Node_value(const Node* node, const Node_layout* layout) {
+/// @brief Gets the pointer to the value stored by a node
+static inline void* node_value(const Node* node, const Node_layout* layout) {
   return (char*)node + layout->value_offset;
 }
 
-static inline bool Node_is_black(const Node* node) {
+/// @brief Determines if a node is black
+/// @note @c NULL is considered black
+static inline bool node_is_black(const Node* node) {
   return node == NULL || node->color == BLACK;
 }
 
+/// @brief Determines if a node is red
+/// @note @c NULL is considered black
 static inline bool Node_is_red(const Node* node) {
   return node != NULL && node->color == RED;
 }
 
-static size_t Node_check(const Node* node) {
+/// @brief Checks that a tree respects the invariants of 2-3 red-black trees
+/// @return The black depth of the tree
+static size_t node_check(const Node* node) {
   if (node == NULL)
     return 1;
 
@@ -56,16 +86,18 @@ static size_t Node_check(const Node* node) {
     assert(node->color == BLACK || node->parent->color == BLACK);
   }
 
-  assert(Node_is_black(node->children[LEFT]) || Node_is_black(node->children[RIGHT]));
+  assert(node_is_black(node->children[LEFT]) || node_is_black(node->children[RIGHT]));
 
-  size_t left_black_depth = Node_check(node->children[LEFT]);
-  size_t right_black_depth = Node_check(node->children[RIGHT]);
+  size_t left_black_depth = node_check(node->children[LEFT]);
+  size_t right_black_depth = node_check(node->children[RIGHT]);
   assert(left_black_depth == right_black_depth);
 
   return left_black_depth + (node->color == BLACK ? 1 : 0);
 }
 
-static Node* Node_xmost_node(const Node* node, Direction direction) {
+/// @brief Retrieves the leftmost or rightmost descendant of a node
+/// @param direction @c LEFT for the leftmost node, @c RIGHT for the rightmost node
+static Node* node_xmost_node(const Node* node, Direction direction) {
   while (node->children[direction] != NULL) {
     node = node->children[direction];
   }
@@ -73,7 +105,9 @@ static Node* Node_xmost_node(const Node* node, Direction direction) {
   return (Node*)node;
 }
 
-static Node* Node_xmost_leaf(const Node* node, Direction direction) {
+/// @brief Retrieves the leftmost or rightmost leaf descending from a node
+/// @param direction @c LEFT for the leftmost leaf, @c RIGHT for the rightmost leaf
+static Node* node_xmost_leaf(const Node* node, Direction direction) {
   while (true) {
     if (node->children[direction] != NULL) {
       node = node->children[direction];
@@ -85,30 +119,37 @@ static Node* Node_xmost_leaf(const Node* node, Direction direction) {
   }
 }
 
-static Node* Node_post_order_xcessor(const Node* node, Direction direction) {
+/// @brief Retrieves the post-order predecessor or successor of a node, if any
+/// @param direction @c LEFT for the post-order predecessor, @c RIGHT for the post-order successor
+static Node* node_post_order_xcessor(const Node* node, Direction direction) {
   if (node->direction != direction && node->parent != NULL && node->parent->children[direction] != NULL) {
-    return Node_xmost_leaf(node->parent->children[direction], 1 - direction);
+    return node_xmost_leaf(node->parent->children[direction], 1 - direction);
   } else {
     return node->parent;
   }
 }
 
-static size_t Node_count(const Node* node) {
+/// @brief Counts the number of nodes in a tree
+static size_t node_count(const Node* node) {
   size_t count = 0;
 
   if (node != NULL) {
-    node = Node_xmost_leaf(node, LEFT);
+    node = node_xmost_leaf(node, LEFT);
 
     do {
       count += 1;
-      node = Node_post_order_xcessor(node, RIGHT);
+      node = node_post_order_xcessor(node, RIGHT);
     } while (node != NULL);
   }
 
   return count;
 }
 
-static Node* Node_rotate(Node* node, Direction direction) {
+/// @brief Rotates a tree
+/// @return The root of the now rotated tree
+/// @note It is the callee’s responsibility to update the relevant child pointer of the parent
+/// @pre `this->children[1 - direction] != NULL`
+static Node* node_rotate(Node* node, Direction direction) {
   //       C                         A
   //     ┌╌┴╌┐         →B          ┌╌┴╌┐
   //    →B   d       ┌╌╌┴╌╌┐       a   B←
@@ -174,9 +215,9 @@ Map* map_new(Layout key_layout, Layout value_layout, Comparator comparator) {
 }
 
 void map_check(const Map* map) {
-  assert(Node_is_black(map->root));
-  Node_check(map->root);
-  assert(Node_count(map->root) == map->count);
+  assert(node_is_black(map->root));
+  node_check(map->root);
+  assert(node_count(map->root) == map->count);
 }
 
 size_t map_count(const Map* map) {
@@ -187,14 +228,14 @@ void* map_lookup(const Map* map, const void* key) {
   const Node* node = map->root;
 
   while (node != NULL) {
-    int ordering = comparator_compare(map->comparator, key, Node_key(node, &map->node_layout));
+    int ordering = comparator_compare(map->comparator, key, node_key(node, &map->node_layout));
 
     if (ordering < 0) {
       node = node->children[LEFT];
     } else if (ordering > 0) {
       node = node->children[RIGHT];
     } else {
-      return Node_value(node, &map->node_layout);
+      return node_value(node, &map->node_layout);
     }
   }
 
@@ -209,7 +250,7 @@ bool map_insert(Map* map, const void* key, const void* value) {
   Direction node_direction = LEFT;
 
   while (node != NULL) {
-    int ordering = comparator_compare(map->comparator, key, Node_key(node, &map->node_layout));
+    int ordering = comparator_compare(map->comparator, key, node_key(node, &map->node_layout));
 
     if (ordering < 0) {
       parent = node;
@@ -219,7 +260,7 @@ bool map_insert(Map* map, const void* key, const void* value) {
       node = node->children[node_direction = RIGHT];
     } else {
       memmove(
-        Node_value(node, &map->node_layout),
+        node_value(node, &map->node_layout),
         value,
         map->node_layout.value_size
       );
@@ -238,13 +279,13 @@ bool map_insert(Map* map, const void* key, const void* value) {
   node->color = RED;
 
   memmove(
-    Node_key(node, &map->node_layout),
+    node_key(node, &map->node_layout),
     key,
     map->node_layout.key_size
   );
 
   memmove(
-    Node_value(node, &map->node_layout),
+    node_value(node, &map->node_layout),
     value,
     map->node_layout.value_size
   );
@@ -268,7 +309,7 @@ bool map_insert(Map* map, const void* key, const void* value) {
         // ┌─┴─┐           ┌─┴─┐  ╎  ┌─┴─┐           ┌─┴─┐
         // b   c           c   d  ╎  a   b           b   c
         node = node->parent;
-        Node* B = Node_rotate(node, node->direction);
+        Node* B = node_rotate(node, node->direction);
         B->parent->children[B->direction] = B;
       }
 
@@ -280,7 +321,7 @@ bool map_insert(Map* map, const void* key, const void* value) {
       //  →A   c       ┌─┴─┐ ┌─┴─┐  ╎  ┌─┴─┐ ┌─┴─┐       b   C←
       // ┌─┴─┐         a   b c   d  ╎  a   b c   d         ┌─┴─┐
       // a   b                      ╎                      c   d
-      Node* B = Node_rotate(node->parent->parent, 1 - node->direction);
+      Node* B = node_rotate(node->parent->parent, 1 - node->direction);
       *(B->parent != NULL ? &B->parent->children[B->direction] : &map->root) = B;
     }
 
@@ -296,7 +337,7 @@ bool map_insert(Map* map, const void* key, const void* value) {
       node->parent->children[1 - node->direction]->color = BLACK;
       node->parent->color = RED;
       node = node->parent;
-    } else {  // if (Node_is_black(node->parent->children[1 - node->direction]))
+    } else {  // if (node_is_black(node->parent->children[1 - node->direction]))
       break;
     }
   }
@@ -312,7 +353,7 @@ bool map_remove(Map* map, const void* key) {
 
   while (true) {
     if (node != NULL) {
-      int ordering = comparator_compare(map->comparator, key, Node_key(node, &map->node_layout));
+      int ordering = comparator_compare(map->comparator, key, node_key(node, &map->node_layout));
 
       if (ordering < 0) {
         node = node->children[LEFT];
@@ -327,17 +368,17 @@ bool map_remove(Map* map, const void* key) {
   }
 
   if (node->children[LEFT] != NULL && node->children[RIGHT] != NULL) {
-    Node* in_order_predecessor = Node_xmost_node(node->children[LEFT], RIGHT);
+    Node* in_order_predecessor = node_xmost_node(node->children[LEFT], RIGHT);
 
     memmove(
-      Node_key(node, &map->node_layout),
-      Node_key(in_order_predecessor, &map->node_layout),
+      node_key(node, &map->node_layout),
+      node_key(in_order_predecessor, &map->node_layout),
       map->node_layout.key_size
     );
 
     memmove(
-      Node_value(node, &map->node_layout),
-      Node_value(in_order_predecessor, &map->node_layout),
+      node_value(node, &map->node_layout),
+      node_value(in_order_predecessor, &map->node_layout),
       map->node_layout.value_size
     );
 
@@ -382,7 +423,7 @@ bool map_remove(Map* map, const void* key) {
       //   A     C  e   f     a   b  C    →E    ╎   →A     C  e   f     a   b  C     E
       // ┌─┴─┐ ┌─┴─┐               ┌─┴─┐ ┌─┴─┐  ╎  ┌─┴─┐ ┌─┴─┐               ┌─┴─┐ ┌─┴─┐
       // a   b c   d               c   d e   f  ╎  a   b c   d               c   d e   f
-      Node* DB = Node_rotate(parent, node_direction);
+      Node* DB = node_rotate(parent, node_direction);
       *(DB->parent != NULL ? &DB->parent->children[DB->direction] : &map->root) = DB;
       sibling = parent->children[1 - node_direction];
     }
@@ -396,7 +437,7 @@ bool map_remove(Map* map, const void* key) {
     sibling->color = RED;
 
     if (Node_is_red(sibling->children[LEFT]) || Node_is_red(sibling->children[RIGHT])) {
-      if (Node_is_black(sibling->children[sibling->direction])) {
+      if (node_is_black(sibling->children[sibling->direction])) {
         //                     Rule from Figure 15a:
         //                    A          ╎          D
         //    A             ┌─┶━┓        ╎        ┏━┵─┐             D
@@ -407,7 +448,7 @@ bool map_remove(Map* map, const void* key) {
         // ┌─┴─┐ ┌─┴─┐          c   D    ╎    A   c          ┌─┴─┐ ┌─┴─┐
         // b   c d   e            ┌─┴─┐  ╎  ┌─┴─┐            a   b c   d
         //                        d   e  ╎  a   b
-        sibling = Node_rotate(sibling, sibling->direction);
+        sibling = node_rotate(sibling, sibling->direction);
         parent->children[sibling->direction] = sibling;
       }
 
@@ -419,7 +460,7 @@ bool map_remove(Map* map, const void* key) {
       //   A   c        ┌─┴─┐ ┌─┴─┐   ╎   ┌─┴─┐ ┌─┴─┐        b   C
       // ┌─┴─┐          a   b c   d←  ╎  →a   b c   d          ┌─┴─┐
       // a   b                        ╎                        c   d
-      Node* B = Node_rotate(parent, node_direction);
+      Node* B = node_rotate(parent, node_direction);
       *(B->parent != NULL ? &B->parent->children[B->direction] : &map->root) = B;
 
       //    Rule from Figure 15c:
@@ -456,7 +497,7 @@ Map* map_copy(const Map* map) {
 
     if (map->root != NULL) {
       const Node* node0 = map->root;
-      Node* node1 = new_map->root = malloc(map->node_layout.size);
+      Node* node1 = malloc(map->node_layout.size);
 
       if (node1 != NULL) {
         node1->children[LEFT] = NULL;
@@ -466,16 +507,18 @@ Map* map_copy(const Map* map) {
         node1->color = node0->color;
 
         memmove(
-          Node_key(node1, &map->node_layout),
-          Node_key(node0, &map->node_layout),
+          node_key(node1, &map->node_layout),
+          node_key(node0, &map->node_layout),
           map->node_layout.key_size
         );
 
         memmove(
-          Node_value(node1, &map->node_layout),
-          Node_value(node0, &map->node_layout),
+          node_value(node1, &map->node_layout),
+          node_value(node0, &map->node_layout),
           map->node_layout.value_size
         );
+
+        new_map->root = node1;
 
         while (true) {
           Direction direction;
@@ -498,7 +541,7 @@ Map* map_copy(const Map* map) {
             direction = RIGHT;
           }
 
-          Node* new_node1 = node1->children[direction] = malloc(map->node_layout.size);
+          Node* new_node1 = malloc(map->node_layout.size);
 
           if (new_node1 != NULL) {
             new_node1->children[LEFT] = NULL;
@@ -508,19 +551,20 @@ Map* map_copy(const Map* map) {
             new_node1->color = node0->children[direction]->color;
 
             memmove(
-              Node_key(new_node1, &map->node_layout),
-              Node_key(node0->children[direction], &map->node_layout),
+              node_key(new_node1, &map->node_layout),
+              node_key(node0->children[direction], &map->node_layout),
               map->node_layout.key_size
             );
 
             memmove(
-              Node_value(new_node1, &map->node_layout),
-              Node_value(node0->children[direction], &map->node_layout),
+              node_value(new_node1, &map->node_layout),
+              node_value(node0->children[direction], &map->node_layout),
               map->node_layout.value_size
             );
 
+            node1->children[direction] = new_node1;
             node0 = node0->children[direction];
-            node1 = new_node1;
+            node1 = node1->children[direction];
           } else {  // if (new_node1 == NULL)
             map_clear(new_map);
             free(new_map);
@@ -542,10 +586,10 @@ Map* map_copy(const Map* map) {
 
 void map_clear(Map* map) {
   if (map->root != NULL) {
-    Node* node = Node_xmost_leaf(map->root, LEFT);
+    Node* node = node_xmost_leaf(map->root, LEFT);
 
     do {
-      Node* post_order_successor = Node_post_order_xcessor(node, RIGHT);
+      Node* post_order_successor = node_post_order_xcessor(node, RIGHT);
       free(node);
       node = post_order_successor;
     } while (node != NULL);
