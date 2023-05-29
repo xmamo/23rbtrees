@@ -1,6 +1,6 @@
 #include "layout.h"
 
-Layout layout_init(void) {
+Layout layout_empty(void) {
   return (Layout){.size = 0, .alignment = 1};
 }
 
@@ -27,7 +27,7 @@ size_t layout_add(Layout* layout, Layout member_layout) {
   return member_offset;
 }
 
-Layout layout_build(const Layout* layout) {
+Layout layout_pad(const Layout* layout) {
   size_t alignment = layout->alignment;
 
   if (alignment == 0) {
