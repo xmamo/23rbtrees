@@ -70,7 +70,7 @@ static inline bool node_is_black(const Node* node) {
 
 /// @brief Determines if a node is red
 /// @note @c NULL is considered black
-static inline bool Node_is_red(const Node* node) {
+static inline bool node_is_red(const Node* node) {
   return node != NULL && node->color == RED;
 }
 
@@ -339,7 +339,7 @@ bool map_insert(Map* map, const void* key, const void* value) {
       *(B->parent != NULL ? &B->parent->children[B->direction] : &map->root) = B;
     }
 
-    if (Node_is_red(node->parent->children[1 - node->direction])) {
+    if (node_is_red(node->parent->children[1 - node->direction])) {
       //            Rule from Figure 9c:
       //      ╷               ╻               ╷
       //      B              →B               B
@@ -450,7 +450,7 @@ bool map_remove(Map* map, const void* key) {
     // a   b c   d     a   b c   d  ╎  a   b c   d     a   b c   d
     sibling->color = RED;
 
-    if (Node_is_red(sibling->children[LEFT]) || Node_is_red(sibling->children[RIGHT])) {
+    if (node_is_red(sibling->children[LEFT]) || node_is_red(sibling->children[RIGHT])) {
       if (node_is_black(sibling->children[sibling->direction])) {
         //                     Rule from Figure 15a:
         //                    A          ╎          D
