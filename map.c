@@ -2,7 +2,6 @@
 
 #include <assert.h>
 #include <stdalign.h>
-#include <stdlib.h>
 #include <string.h>
 
 /// @brief Red-black color enumeration
@@ -197,10 +196,16 @@ struct Map {
 
   /// @brief The layout of nodes, providing information to allocate nodes or access their data
   Node_layout node_layout;
+
+  Allocator allocator;
 };
 
 Map* map_new(Layout key_layout, Layout value_layout, Comparator comparator) {
-  Map* map = malloc(sizeof(Map));
+  return map_new_with(key_layout, value_layout, comparator, heap_allocator);
+}
+
+Map* map_new_with(Layout key_layout, Layout value_layout, Comparator comparator, Allocator allocator) {
+  Map* map = allocator_allocate(allocator, sizeof(Map));
 
   if (map != NULL) {
     map->root = NULL;
@@ -216,6 +221,8 @@ Map* map_new(Layout key_layout, Layout value_layout, Comparator comparator) {
     map->node_layout.key_size = key_layout.size;
     map->node_layout.value_offset = value_offset;
     map->node_layout.value_size = value_layout.size;
+
+    map->allocator = allocator;
   }
 
   return map;
@@ -276,7 +283,7 @@ bool map_insert(Map* map, const void* key, const void* value) {
     }
   }
 
-  if ((node = malloc(map->node_layout.size)) == NULL)
+  if ((node = allocator_allocate(map->allocator, map->node_layout.size)) == NULL)
     return false;
 
   node->children[LEFT] = NULL;
@@ -402,14 +409,14 @@ bool map_remove(Map* map, const void* key) {
       child->parent = parent;
       child->direction = node_direction;
       child->color = node_color;
-      free(node);
+      allocator_free(map->allocator, node);
       *(parent != NULL ? &parent->children[node_direction] : &map->root) = child;
       map->count -= 1;
       return true;
     }
   }
 
-  free(node);
+  allocator_free(map->allocator, node);
   *(parent != NULL ? &parent->children[node_direction] : &map->root) = NULL;
   map->count -= 1;
 
@@ -496,15 +503,16 @@ bool map_remove(Map* map, const void* key) {
 }
 
 Map* map_copy(const Map* map) {
-  Map* new_map = malloc(sizeof(Map));
+  return map_copy_with(map, heap_allocator);
+}
+
+Map* map_copy_with(const Map* map, Allocator allocator) {
+  Map* new_map = allocator_allocate(allocator, sizeof(Map));
 
   if (new_map != NULL) {
-    new_map->comparator = map->comparator;
-    new_map->node_layout = map->node_layout;
-
     if (map->root != NULL) {
       const Node* node0 = map->root;
-      Node* node1 = malloc(map->node_layout.size);
+      Node* node1 = allocator_allocate(allocator, map->node_layout.size);
 
       if (node1 != NULL) {
         node1->children[LEFT] = NULL;
@@ -538,6 +546,9 @@ Map* map_copy(const Map* map) {
             while (node0->children[RIGHT] == NULL || node1->children[RIGHT] != NULL) {
               if (node0->parent == NULL) {
                 new_map->count = map->count;
+                new_map->comparator = map->comparator;
+                new_map->node_layout = map->node_layout;
+                new_map->allocator = allocator;
                 return new_map;
               }
 
@@ -548,7 +559,7 @@ Map* map_copy(const Map* map) {
             direction = RIGHT;
           }
 
-          Node* new_node1 = malloc(map->node_layout.size);
+          Node* new_node1 = allocator_allocate(allocator, map->node_layout.size);
 
           if (new_node1 != NULL) {
             new_node1->children[LEFT] = NULL;
@@ -573,18 +584,20 @@ Map* map_copy(const Map* map) {
             node0 = node0->children[direction];
             node1 = node1->children[direction];
           } else {  // if (new_node1 == NULL)
-            map_clear(new_map);
-            free(new_map);
+            map_destroy(new_map);
             return NULL;
           }
         }
       } else {  // if (node1 == NULL)
-        free(new_map);
+        allocator_free(allocator, new_map);
         return NULL;
       }
     } else {  // if (map->root == NULL)
       new_map->root = NULL;
       new_map->count = 0;
+      new_map->comparator = map->comparator;
+      new_map->node_layout = map->node_layout;
+      new_map->allocator = allocator;
     }
   }
 
@@ -597,7 +610,7 @@ void map_clear(Map* map) {
 
     do {
       Node* post_order_successor = node_post_order_xcessor(node, RIGHT);
-      free(node);
+      allocator_free(map->allocator, node);
       node = post_order_successor;
     } while (node != NULL);
   }
@@ -608,5 +621,5 @@ void map_clear(Map* map) {
 
 void map_destroy(Map* map) {
   map_clear(map);
-  free(map);
+  allocator_free(map->allocator, map);
 }

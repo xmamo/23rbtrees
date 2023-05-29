@@ -33,7 +33,7 @@ foreach(LANGUAGE ${PROJECT_LANGUAGES})
   endif()
 endforeach()
 
-add_executable(test layout.c comparator.c map.c test.cpp)
+add_executable(test allocator.c comparator.c layout.c map.c test.cpp)
 target_compile_features(test PRIVATE cxx_std_20)
 target_compile_features(test PRIVATE c_std_11)
 set_target_properties(test PROPERTIES CXX_CLANG_TIDY "clang-tidy;-p;${CMAKE_CURRENT_BINARY_DIR}")
