@@ -249,7 +249,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "        C++ Map insertions: " << t1 - t0 << std::endl;
+        std::cout << "       cpp::Map insertions: " << t1 - t0 << std::endl;
       }
 
       {
@@ -261,7 +261,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "          C Map insertions: " << t1 - t0 << std::endl;
+        std::cout << "            Map insertions: " << t1 - t0 << std::endl;
       }
 
       {
@@ -273,12 +273,12 @@ namespace {
         t0 = std::chrono::high_resolution_clock::now();
         cpp::Map<int, int> cpp_map_copy(cpp_map);
         t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "              C++ Map copy: " << t1 - t0 << std::endl;
+        std::cout << "             cpp::Map copy: " << t1 - t0 << std::endl;
 
         t0 = std::chrono::high_resolution_clock::now();
         Map* c_map_copy = map_copy(c_map);
         t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "                C Map copy: " << t1 - t0 << std::endl;
+        std::cout << "                  Map copy: " << t1 - t0 << std::endl;
 
         t0 = std::chrono::high_resolution_clock::now();
         std_map_copy.clear();
@@ -288,12 +288,12 @@ namespace {
         t0 = std::chrono::high_resolution_clock::now();
         cpp_map_copy.clear();
         t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "             C++ Map clear: " << t1 - t0 << std::endl;
+        std::cout << "            cpp::Map clear: " << t1 - t0 << std::endl;
 
         t0 = std::chrono::high_resolution_clock::now();
         map_clear(c_map_copy);
         t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "               C Map clear: " << t1 - t0 << std::endl;
+        std::cout << "                 Map clear: " << t1 - t0 << std::endl;
 
         map_destroy(c_map_copy);
       }
@@ -319,7 +319,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "           C++ Map lookups: " << t1 - t0 << std::endl;
+        std::cout << "          cpp::Map lookups: " << t1 - t0 << std::endl;
       }
 
       {
@@ -330,7 +330,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "             C Map lookups: " << t1 - t0 << std::endl;
+        std::cout << "               Map lookups: " << t1 - t0 << std::endl;
       }
 
       std::shuffle(keys.begin(), keys.end(), engine);
@@ -354,7 +354,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "          C++ Map removals: " << t1 - t0 << std::endl;
+        std::cout << "         cpp::Map removals: " << t1 - t0 << std::endl;
       }
 
       {
@@ -365,7 +365,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "            C Map removals: " << t1 - t0 << std::endl;
+        std::cout << "              Map removals: " << t1 - t0 << std::endl;
       }
     }
 
@@ -429,7 +429,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << " C++ Map random operations: " << t1 - t0 << std::endl;
+        std::cout << "cpp::Map random operations: " << t1 - t0 << std::endl;
       }
 
       {
@@ -454,7 +454,7 @@ namespace {
         }
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::cout << "   C Map random operations: " << t1 - t0 << std::endl;
+        std::cout << "     Map random operations: " << t1 - t0 << std::endl;
       }
     }
 
