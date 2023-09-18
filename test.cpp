@@ -20,9 +20,7 @@ extern "C" {
 #include "map.h"
 }
 
-namespace cpp {
 #include "map.hpp"
-}
 
 namespace {
   volatile int value;
